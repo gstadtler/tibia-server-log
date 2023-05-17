@@ -1,19 +1,14 @@
-# tibia-server-log
+# Dependências
+
+- nodeJS (versão LTS ou maior)
+- npm (ou outro administrador de pacotes node, como yarn, pnpm, etc)
 
 ## Passos para rodar a aplicação
 
-```sh
 Fazer um Fork e/ou Clonar esse repositório
-```
 
-```sh
-npm install
-```
+Acessar o diretório onde o projeto foi clonado e rodar os seguintes comandos:
 
-```sh
-npm run dev
-```
+- npm install
 
-```sh
-npm run build
-```
+- npm run dev
