@@ -1,57 +1,135 @@
 <script lang="ts">
 import type { Log } from '@/types'
 import axios from 'axios'
-import EventAnimation from '@/components/EventAnimation.vue'
+import type { StyleValue } from 'vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faUpLong, faFlask, faHeartCrack, faDiamondTurnRight } from '@fortawesome/free-solid-svg-icons'
+library.add(faUpLong, faFlask, faHeartCrack, faDiamondTurnRight)
 
 export default {
   components: {
-    EventAnimation
+    FontAwesomeIcon
   },
   data() {
     return {
+      isLoading: true,
+      loadingMessage: 'Wait a second, we are rescuing the mage',
       log: [] as Log[],
-      show: false,
-      logList: [] as Log[]
+      eventInfo: {} as Log,
     }
   },
   async created() {
     const baseUrl  = "http://localhost:3333"
     const { data } = await axios.get(`${baseUrl}/log`)
-    this.log = data
-    this.renderEventWithDelay()
+    this.handleLoading(data)
   },
   methods: {
-    renderEventWithDelay() {
-      this.log.forEach((item, index) => {
+    handleLoading(data: Log[]) {
+      setTimeout(() => {
+        this.loadingMessage = 'Entering Calmera...'
+      }, 2000)
+      setTimeout(() => {
+        this.isLoading = false
+        this.renderEventWithDelay(data)
+      }, 4000)
+    },
+    renderEventWithDelay(logData: Log[]) {
+      logData.forEach((item, index) => {
         setTimeout(() => {
-          this.logList.unshift(item)
-        }, 1000 * (index + 1))
+          this.log.unshift(item)
+          this.eventInfo = item
+        }, 2000 * (index + 1))
       })
+    },
+    eventBasedStyle(eventInfo: Log) {
+      let style = {} as StyleValue
+        switch (eventInfo.Type) {
+          case "heal":
+            style = {
+              background: "#7fc6a4"
+            }
+            break
+          case "damage":
+            style = {
+              background: "#C3041E"
+            }
+            break
+          case "experience":
+            style = {
+              background: "#5ab1bb"
+            }
+            break
+          default:
+            style = {
+              border: "none"
+            }
+        }
+      return style
     }
   }
 }
 </script>
 
 <template>
-  <nav>
-    <RouterLink to="/dashboard">Dashboard</RouterLink>
-  </nav>
-  <div class="container">
-    <div class="plataform">
-      <img src="@/assets/images/tibia-gif2.webp" alt="gif" />
-      <EventAnimation :log="log" />
+  <div v-show="!isLoading" :style="eventBasedStyle(eventInfo)">
+    <nav>
+      <RouterLink to="/dashboard" class="nav-link">Enter Dashboard Village</RouterLink>
+      <font-awesome-icon :icon="['fas', 'diamond-turn-right']" />
+    </nav>
+    <div class="log-wrapper">
+      <div class="plataform">
+        <img src="@/assets/images/tibia-gif2.webp" alt="gif" />
+        <div class="event-info">
+          <p :style="eventBasedStyle(eventInfo)">
+            <font-awesome-icon v-if="eventInfo.Type === 'heal'" :icon="['fas', 'flask']" />
+            <font-awesome-icon v-if="eventInfo.Type === 'damage'" :icon="['fas', 'heart-crack']" />
+            <font-awesome-icon v-if="eventInfo.Type === 'experience'" :icon="['fas', 'up-long']" />
+            {{ eventInfo.Value }}
+            <span v-if="eventInfo.Type === 'heal'">life</span>
+            <span v-if="eventInfo.Type === 'damage'">dmg</span>
+            <span v-if="eventInfo.Type === 'experience'">xp</span>
+          </p>
+        </div>
+      </div>
+      <div class="log">
+        <h1>Event Log</h1>
+        <p v-for="(event, index) in log" :key="index">
+          {{ event.Description }}
+        </p>
+      </div>
     </div>
-    <div class="log">
-      <h1>LOG</h1>
-      <p v-for="(event, index) in logList" :key="index">
-        {{ event.Description }}
-      </p>
-    </div>
+  </div>
+  <div v-show="isLoading" class="loading-message">
+    <p>{{ loadingMessage }}</p>
   </div>
 </template>
 
 <style scoped>
-  .container {
+  .loading-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-size: 24px;
+    font-weight: 300;
+  }
+
+  nav {
+    padding: 20px;
+  }
+  .nav-link {
+    text-decoration: none;
+    color: #111111;
+    font-size: 20px;
+    margin-right: 5px;
+  }
+
+  .nav-link:hover {
+    font-size: 22px;
+    transition: 0.3s;
+  }
+  .log-wrapper {
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -61,36 +139,36 @@ export default {
     background: url('@/assets/images/floor-tale.png') repeat;
     position: relative;
   }
-  .event-info p {
-    position: absolute;
+  .event-info {
     top: 75px;
-    right: 60px;
+    right: 40px;
+    position: absolute;
+  }
+  .event-info p {
+    font-weight: 500;
+    font-size: 18px;
+    padding: 10px;
+    border-radius: 4px;
+    opacity: 85%;
+  }
+  .event-info span {
+    font-weight: 600;
   }
   .log {
+    width: 50%;
+    height: 360px;
     background: #cccccc;
     border-radius: 4px;
     max-height: 300px;
     overflow-y: auto;
-    padding: 20px 40px;
+    padding: 10px 40px;
   }
-  .evento {
-    /* Estilize a aparência dos eventos aqui */
-    width: 200px;
-    height: 100px;
-    background-color: #ccc;
-    border: 1px solid #999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
+  @media (max-width: 940px) {
+    .log-wrapper {
+      flex-direction: column;
+      min-height: auto;
+      gap: 40px;
+      padding-bottom: 50px;
     }
   }
 </style>

@@ -1,4 +1,4 @@
-interface CreatureKind {
+export type CreatureKind = {
   [key: string]: number
 }
 
@@ -8,7 +8,7 @@ interface DamageTaken {
   ByUnknownOriginTotal: number
 }
 
-interface Loot {
+type Loot = {
   [key: string]: number
 }
 
